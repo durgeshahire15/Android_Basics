@@ -22,7 +22,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             AndroidProjectTheme {
                 Button(onClick = {
-                    Intent(applicationContext, SecondActivity::class.java).also { startActivity(it) }
+//                    Intent(applicationContext, SecondActivity::class.java).also {
+//                        startActivity(it)
+//                    }
+                    Intent(Intent.ACTION_MAIN).also {
+                        it.`package` = "com.google.android.youtube"
+                        startActivity(it)
+                    }
                 }) {
                     Text(text = "Click me")
                 }
