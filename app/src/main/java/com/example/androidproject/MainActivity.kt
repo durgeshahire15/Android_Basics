@@ -1,5 +1,6 @@
 package com.example.androidproject
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -22,12 +23,15 @@ class MainActivity : ComponentActivity() {
         setContent {
             AndroidProjectTheme {
                 Button(onClick = {
-//                    Intent(applicationContext, SecondActivity::class.java).also {
-//                        startActivity(it)
-//                    }
                     Intent(Intent.ACTION_MAIN).also {
                         it.`package` = "com.google.android.youtube"
-                        startActivity(it)
+                        try {
+                            startActivity(it)
+                        }
+                        catch (e:ActivityNotFoundException){
+                            e.printStackTrace()
+                        }
+
                     }
                 }) {
                     Text(text = "Click me")
