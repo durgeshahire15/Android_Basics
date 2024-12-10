@@ -23,15 +23,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             AndroidProjectTheme {
                 Button(onClick = {
-                    Intent(Intent.ACTION_MAIN).also {
-                        it.`package` = "com.google.android.youtube"
-                        try {
-                            startActivity(it)
-                        }
-                        catch (e:ActivityNotFoundException){
-                            e.printStackTrace()
-                        }
-
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                       type = "text/plain"
+                        putExtra(Intent.EXTRA_EMAIL, arrayOf("test@test.com"))
+                        putExtra(Intent.EXTRA_SUBJECT,"This is my subject")
+                        putExtra(Intent.EXTRA_TEXT,"This is my content of the email")
+                    }
+                    if(intent.resolveActivity(packageManager)!=null){
+                        startActivity(intent)
                     }
                 }) {
                     Text(text = "Click me")
