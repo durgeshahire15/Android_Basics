@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
                     val intent = Intent(Intent.ACTION_SEND).apply {
                        type = "text/plain"
                         putExtra(Intent.EXTRA_EMAIL, arrayOf("test@test.com"))
-                        putExtra(Intent.EXTRA_SUBJECT,"This is my subject")
+                        putExtra(Intent.EXTRA_SUBJECT,"This is subject")
                         putExtra(Intent.EXTRA_TEXT,"This is my content of the email")
                     }
                     if(intent.resolveActivity(packageManager)!=null){
