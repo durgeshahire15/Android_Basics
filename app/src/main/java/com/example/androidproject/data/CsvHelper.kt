@@ -30,7 +30,7 @@ class CsvHelper {
                     val carbs = nextLine!![2].toDoubleOrNull() ?: 0.0          // Carbs in grams, default to 0.0 if null
                     val fats = nextLine!![3].toDoubleOrNull() ?: 0.0           // Fats in grams, default to 0.0 if null
                     val protein = nextLine!![4].toDoubleOrNull() ?: 0.0        // Protein in grams, default to 0.0 if null
-                    val quantity = nextLine!![5].toIntOrNull() ?: 1            // Quantity, default to 1 if null
+                    val quantity = nextLine!![5].toIntOrNull() ?: 0            // Quantity, default to 1 if null
 
                     // Create a Macros object
                     val macros = FoodItem.Macros(protein, carbs, fats)

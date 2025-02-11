@@ -11,15 +11,11 @@ class FoodSearchViewModel(application: Application) : AndroidViewModel(applicati
     private val _allFoodItems = MutableStateFlow<List<FoodItem>>(emptyList())
     private val _searchQuery = MutableStateFlow("")
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
-    private val _selectedFoodItems = MutableStateFlow<Set<FoodItem>>(mutableSetOf()) // Use a Set for efficiency
-
-
-    private val _macroProgress =  MutableStateFlow(MacroProgress())
+    private val _macroProgress = MutableStateFlow(MacroProgress())
 
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
-    val selectedFoodItems: StateFlow<Set<FoodItem>> = _selectedFoodItems.asStateFlow()
-    val macroProgress: StateFlow<MacroProgress> = _macroProgress.asStateFlow() // Expose macro progress
+    val macroProgress: StateFlow<MacroProgress> = _macroProgress.asStateFlow()
 
     data class MacroProgress(
         var totalCalories: Int = 0,
@@ -28,6 +24,8 @@ class FoodSearchViewModel(application: Application) : AndroidViewModel(applicati
         var fats: Double = 0.0
     )
 
+    // Update FoodItem to include quantity
+
     sealed class UiState {
         object Loading : UiState()
         data class Success(val foodItems: List<FoodItem>) : UiState()
@@ -35,24 +33,22 @@ class FoodSearchViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     init {
-        // Load initial data
         viewModelScope.launch {
             val foodItems = CsvHelper.readCsv(application.applicationContext)
             _allFoodItems.value = foodItems
 
-            // Set initial UI state
             _uiState.value = if (foodItems.isEmpty()) UiState.Empty else UiState.Success(foodItems)
         }
 
-        // Observe search query and filter items
+        // Search query handling
         viewModelScope.launch {
-            combine(_searchQuery, _allFoodItems) { query, items -> // Combine FIRST
-                Pair(query, items) // Emit a Pair of query and items
+            combine(_searchQuery, _allFoodItems) { query, items ->
+                Pair(query, items)
             }
                 .debounce(300)
                 .distinctUntilChanged()
-                .flatMapLatest { (query, items) -> // Destructure the Pair
-                    filterFoodItemsFlow(query, items) // Pass both to the filter function
+                .flatMapLatest { (query, items) ->
+                    filterFoodItemsFlow(query, items)
                 }
                 .collect { filteredItems ->
                     _uiState.value = when {
@@ -62,47 +58,48 @@ class FoodSearchViewModel(application: Application) : AndroidViewModel(applicati
                 }
         }
 
-        // Update macro progress whenever selected items change
+        // Observe allFoodItems for quantity changes and update macros
         viewModelScope.launch {
-            _selectedFoodItems.collect {
-                updateMacroProgress()
-            }
+            _allFoodItems
+                .map { items -> items.filter { it.quantity > 0 } }
+                .collect { itemsWithQuantity ->
+                    updateMacroProgress(itemsWithQuantity)
+                }
         }
-
     }
 
-    fun toggleFoodItemSelection(foodItem: FoodItem) {
-        val currentItems = _selectedFoodItems.value.toMutableSet() // Use a MutableSet
+    fun updateItemCount(foodItem: FoodItem, newQuantity: Int) {
+        val currentItems = _allFoodItems.value.toMutableList()
+        val itemIndex = currentItems.indexOfFirst { it.foodName == foodItem.foodName }
 
-        if (currentItems.contains(foodItem)) {
-            currentItems.remove(foodItem)
-        } else {
-            currentItems.add(foodItem)
+        if (itemIndex != -1 && newQuantity>=0) {
+            // Create new item with updated quantity
+            val updatedItem = foodItem.copy(quantity = newQuantity)
+            currentItems[itemIndex] = updatedItem
+            _allFoodItems.value = currentItems
         }
-        _selectedFoodItems.value = currentItems.toSet() // Update with an immutable Set
-    }
-
-    fun updateItemCount(foodItem:FoodItem){
-
     }
 
     private fun filterFoodItemsFlow(query: String, items: List<FoodItem>): Flow<List<FoodItem>> {
         return if (query.isEmpty()) {
-            flowOf(items) // Emit the items directly as a Flow
+            flowOf(items)
         } else {
             flowOf(items.filter { it.foodName.startsWith(query, ignoreCase = true) })
         }
     }
-    private fun updateMacroProgress() {
+
+    private fun updateMacroProgress(items: List<FoodItem>) {
         val progress = MacroProgress()
-        _selectedFoodItems.value.forEach { foodItem ->
-            progress.totalCalories += foodItem.calories
-            progress.protein += foodItem.macroNutrients.protein
-            progress.carbs += foodItem.macroNutrients.carbs
-            progress.fats += foodItem.macroNutrients.fats
+        items.forEach { foodItem ->
+            // Multiply macros by quantity
+            progress.totalCalories += foodItem.calories * foodItem.quantity
+            progress.protein += foodItem.macroNutrients.protein * foodItem.quantity
+            progress.carbs += foodItem.macroNutrients.carbs * foodItem.quantity
+            progress.fats += foodItem.macroNutrients.fats * foodItem.quantity
         }
         _macroProgress.value = progress
     }
+
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
     }

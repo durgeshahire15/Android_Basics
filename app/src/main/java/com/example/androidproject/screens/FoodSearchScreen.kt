@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -25,9 +26,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.androidproject.R
 import com.example.androidproject.data.FoodItem
 
 @SuppressLint("StateFlowValueCalledInComposition")
@@ -86,19 +90,20 @@ fun FoodSearchScreen(viewModel: FoodSearchViewModel) {
 
 @Composable
 fun FoodItemRow(foodItem: FoodItem, viewModel: FoodSearchViewModel) {
-    val selectedFoodItems by viewModel.selectedFoodItems.collectAsState()
-    val isSelected = selectedFoodItems.contains(foodItem)
+//    val selectedFoodItems by viewModel.uiState.value
+//    val isSelected = selectedFoodItems.contains(foodItem)
 
 
     Card(modifier = Modifier
         .fillMaxWidth()
         .clickable {
-            viewModel.toggleFoodItemSelection(foodItem)
+//            viewModel.toggleFoodItemSelection(foodItem)
+//            viewModel.updateItemCount(foodItem, foodItem.quantity + 1)
         }
         .padding(horizontal = 16.dp, vertical = 8.dp)
         .border(
             width = 0.75.dp,
-            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, // Conditional border color,
+            color = if (foodItem.quantity > 0) MaterialTheme.colorScheme.primary else Color.Transparent, // Conditional border color,
             shape = MaterialTheme.shapes.medium
         ),
 
@@ -113,7 +118,6 @@ fun FoodItemRow(foodItem: FoodItem, viewModel: FoodSearchViewModel) {
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(), // Important: Fill the width for SpaceBetween to work
-
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
@@ -121,12 +125,23 @@ fun FoodItemRow(foodItem: FoodItem, viewModel: FoodSearchViewModel) {
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
+                Row{
+                Icon(
+                    painter = painterResource(R.drawable.baseline_add_24),
+                    contentDescription = stringResource(id = R.string.bus_content_description),
+                    modifier = Modifier.clickable { viewModel.updateItemCount(foodItem, foodItem.quantity + 1) }
+                )
                 Text(
-
-                    text = "Quantity",
+                    text = if (foodItem.quantity == 0) "Quantity" else foodItem.quantity.toString(),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
+                Icon(
+                    painter = painterResource(R.drawable.baseline_minimize_24),
+                    contentDescription = stringResource(id = R.string.minimise_description),
+                    modifier = Modifier.clickable { viewModel.updateItemCount(foodItem, foodItem.quantity - 1) }
+                )
+                }
             }
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -245,11 +260,13 @@ fun previewFoodItemRow(
                     text = "ADD+",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.inversePrimary,  // Conditional border color,
-                        shape = MaterialTheme.shapes.medium
-                    ).padding(10.dp)
+                    modifier = Modifier
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.inversePrimary,  // Conditional border color,
+                            shape = MaterialTheme.shapes.medium
+                        )
+                        .padding(10.dp)
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
