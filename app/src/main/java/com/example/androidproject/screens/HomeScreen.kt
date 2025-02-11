@@ -1,5 +1,6 @@
 package com.example.androidproject.screens
 import FoodSearchViewModel
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,8 +40,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+
 @Composable
 fun HomeScreen(viewModel: FoodSearchViewModel) {
+    val uiState by viewModel.uiState.collectAsState() // Collect UI state
+    val macroProgress by viewModel.macroProgress.collectAsState()
+
     Surface(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         color = MaterialTheme.colorScheme.surface
@@ -56,10 +63,10 @@ fun HomeScreen(viewModel: FoodSearchViewModel) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            MacroCard("Calories", "2000 kcal", Icons.Default.AccountBox, Color.Red, 0.7f)
-            MacroCard("Protein", "150g", Icons.Default.Add, Color.Green, 0.5f)
-            MacroCard("Carbs", "250g", Icons.Default.Refresh, Color.Blue, 0.6f)
-            MacroCard("Fats", "70g", Icons.Default.Face, Color.Yellow, 0.4f)
+            MacroCard("Calories", "2000 kcal", Icons.Default.AccountBox, Color.Red, macroProgress.totalCalories.toFloat()/2000)
+            MacroCard("Protein", "150g", Icons.Default.Add, Color.Green, macroProgress.protein.toFloat()/150)
+            MacroCard("Carbs", "175g", Icons.Default.Refresh, Color.Blue, macroProgress.carbs.toFloat()/175)
+            MacroCard("Fats", "78g", Icons.Default.Face, Color.Yellow, macroProgress.fats.toFloat()/78)
         }
     }
 }
@@ -86,7 +93,11 @@ fun MacroCard(title: String, value: String, icon: androidx.compose.ui.graphics.v
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                LinearProgressIndicator(progress = progress, modifier = Modifier.fillMaxWidth(), color = color)
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.fillMaxWidth(),
+                    color = color,
+                )
             }
         }
     }

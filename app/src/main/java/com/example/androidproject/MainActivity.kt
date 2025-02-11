@@ -19,7 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -43,8 +42,6 @@ class MainActivity : ComponentActivity() {
 fun MainScreen() {
     val navController = rememberNavController()
     val context = LocalContext.current.applicationContext as Application
-
-    // Create shared ViewModel with custom factory
     val sharedViewModel: FoodSearchViewModel = viewModel(
         factory = FoodSearchViewModelFactory(context)
     )
@@ -57,8 +54,7 @@ fun MainScreen() {
 
 @Composable
 fun BottomNavBar(navController: NavHostController) {
-    Box(
-    ) {
+    Box{
         NavigationBar(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             tonalElevation = 2.dp,
@@ -90,7 +86,7 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier, shared
     }
 }
 
-@Preview(showBackground = true,)
+@Preview(showBackground = true)
 @Composable
 fun PreviewBottomNavBar() {
     NavigationBar(containerColor = Color.LightGray , tonalElevation = 4.dp,

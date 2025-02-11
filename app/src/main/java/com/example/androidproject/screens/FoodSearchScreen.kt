@@ -164,7 +164,7 @@ private fun MacroNutrientItem(label: String, value: Double) {
 
 @Composable
 private fun VerticalDivider() {
-    Divider(
+    HorizontalDivider(
         modifier = Modifier
             .height(24.dp)
             .width(1.dp),
