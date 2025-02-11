@@ -79,9 +79,13 @@ class FoodSearchViewModel(application: Application) : AndroidViewModel(applicati
         } else {
             currentItems.add(foodItem)
         }
-
         _selectedFoodItems.value = currentItems.toSet() // Update with an immutable Set
     }
+
+    fun updateItemCount(foodItem:FoodItem){
+
+    }
+
     private fun filterFoodItemsFlow(query: String, items: List<FoodItem>): Flow<List<FoodItem>> {
         return if (query.isEmpty()) {
             flowOf(items) // Emit the items directly as a Flow

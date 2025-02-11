@@ -1,21 +1,34 @@
 import android.annotation.SuppressLint
-import android.app.Application
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidproject.data.FoodItem
-import com.example.androidproject.viewModel.FoodSearchViewModelFactory
-import kotlinx.coroutines.flow.SharingStarted
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
@@ -24,13 +37,11 @@ fun FoodSearchScreen(viewModel: FoodSearchViewModel) {
     val searchQuery by viewModel.searchQuery.collectAsState() // Collect search query
 
     Column(
-
-                modifier = Modifier
-                .fillMaxSize()
-            .padding(top = 16.dp,start = 16.dp, end = 16.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 16.dp, start = 16.dp, end = 16.dp)
     ) {
-        OutlinedTextField(
-            value = searchQuery,
+        OutlinedTextField(value = searchQuery,
             onValueChange = { viewModel.onSearchQueryChanged(it) },
             label = { Text("Search Food") },
             modifier = Modifier.fillMaxWidth()
@@ -42,6 +53,7 @@ fun FoodSearchScreen(viewModel: FoodSearchViewModel) {
             is FoodSearchViewModel.UiState.Loading -> {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally)) // Centered loading indicator
             }
+
             is FoodSearchViewModel.UiState.Success -> {
                 if (state.foodItems.isEmpty()) {
                     Text(
@@ -57,6 +69,7 @@ fun FoodSearchScreen(viewModel: FoodSearchViewModel) {
                     }
                 }
             }
+
             is FoodSearchViewModel.UiState.Empty -> {
                 Text(
                     text = "No items found",
@@ -76,74 +89,89 @@ fun FoodItemRow(foodItem: FoodItem, viewModel: FoodSearchViewModel) {
     val selectedFoodItems by viewModel.selectedFoodItems.collectAsState()
     val isSelected = selectedFoodItems.contains(foodItem)
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                viewModel.toggleFoodItemSelection(foodItem)
-            },
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Checkbox(
-            checked = isSelected,
-            onCheckedChange = {viewModel.toggleFoodItemSelection(foodItem)}
-        )
 
-        Card(  // Your existing Card composable
+    Card(modifier = Modifier
+        .fillMaxWidth()
+        .clickable {
+            viewModel.toggleFoodItemSelection(foodItem)
+        }
+        .padding(horizontal = 16.dp, vertical = 8.dp)
+        .border(
+            width = 0.75.dp,
+            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, // Conditional border color,
+            shape = MaterialTheme.shapes.medium
+        ),
+
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        )) {
+        Column(
             modifier = Modifier
+                .padding(20.dp)
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-            )
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(20.dp)
-                    .fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth(), // Important: Fill the width for SpaceBetween to work
+
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = foodItem.foodName,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
+                Text(
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    text = "Quantity",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "${foodItem.calories}",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = " calories",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${foodItem.calories}",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = " calories",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    MacroNutrientItem("Carbs", foodItem.macroNutrients.carbs)
-                    VerticalDivider()
-                    MacroNutrientItem("Fats", foodItem.macroNutrients.fats)
-                    VerticalDivider()
-                    MacroNutrientItem("Protein", foodItem.macroNutrients.protein)
-                }
+            Row(
+                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                MacroNutrientItem("Carbs", foodItem.macroNutrients.carbs)
+                VerticalDivider(
+                    modifier = Modifier
+                        .height(24.dp)
+                        .width(1.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+                MacroNutrientItem("Fats", foodItem.macroNutrients.fats)
+                VerticalDivider(
+                    modifier = Modifier
+                        .height(24.dp)
+                        .width(1.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+                MacroNutrientItem("Protein", foodItem.macroNutrients.protein)
             }
         }
     }
 }
+
 @Composable
 private fun MacroNutrientItem(label: String, value: Double) {
     Column(
@@ -162,12 +190,108 @@ private fun MacroNutrientItem(label: String, value: Double) {
     }
 }
 
+//@Composable
+//private fun VerticalDivider() {
+//    Divider(
+//        modifier = Modifier
+//            .height(24.dp)
+//            .width(1.dp),
+//        color = MaterialTheme.colorScheme.outlineVariant
+//    )
+//}
+
+@Preview()
 @Composable
-private fun VerticalDivider() {
-    HorizontalDivider(
-        modifier = Modifier
-            .height(24.dp)
-            .width(1.dp),
-        color = MaterialTheme.colorScheme.outlineVariant
+
+fun previewFoodItemRow(
+    foodItem: FoodItem = FoodItem(
+        foodName = "Avocado Toast", calories = 320, macroNutrients = FoodItem.Macros(
+            carbs = 20.0, fats = 25.0, protein = 5.0
+        )
     )
+) {
+    Card(modifier = Modifier
+        .fillMaxWidth()
+        .clickable {
+//            viewModel.toggleFoodItemSelection(foodItem)
+        }
+        .padding(horizontal = 16.dp, vertical = 8.dp)
+        .border(
+            width = 0.75.dp,
+            color = if (true) MaterialTheme.colorScheme.primary else Color.Transparent, // Conditional border color,
+            shape = MaterialTheme.shapes.medium
+        ),
+
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        )) {
+        Column(
+            modifier = Modifier
+                .padding(20.dp)
+                .fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(), // Important: Fill the width for SpaceBetween to work
+
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = foodItem.foodName,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "ADD+",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.inversePrimary,  // Conditional border color,
+                        shape = MaterialTheme.shapes.medium
+                    ).padding(10.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${foodItem.calories}",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = " calories",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                MacroNutrientItem("Carbs", foodItem.macroNutrients.carbs)
+                VerticalDivider(
+                    modifier = Modifier
+                        .height(24.dp)
+                        .width(1.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+                MacroNutrientItem("Fats", foodItem.macroNutrients.fats)
+                VerticalDivider(
+                    modifier = Modifier
+                        .height(24.dp)
+                        .width(1.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+                MacroNutrientItem("Protein", foodItem.macroNutrients.protein)
+            }
+        }
+    }
 }
