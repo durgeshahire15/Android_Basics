@@ -32,15 +32,10 @@ class CsvHelper {
                     val protein = nextLine!![4].toDoubleOrNull() ?: 0.0        // Protein in grams, default to 0.0 if null
                     val quantity = nextLine!![5].toIntOrNull() ?: 0            // Quantity, default to 1 if null
 
-                    // Create a Macros object
-                    val macros = FoodItem.Macros(protein, carbs, fats)
+                    val foodItem = FoodItem(foodName, calories, protein,carbs,fats, quantity)
 
-                    // Create a FoodItem object and add it to the list
-                    val foodItem = FoodItem(foodName, calories, macros, quantity)
                     foodItems.add(foodItem)
                 }
-
-                // Close the CSV reader
                 csvReader.close()
             } catch (e: Exception) {
                 e.printStackTrace()

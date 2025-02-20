@@ -167,21 +167,21 @@ fun FoodItemRow(foodItem: FoodItem, viewModel: FoodSearchViewModel) {
             Row(
                 modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                MacroNutrientItem("Carbs", foodItem.macroNutrients.carbs)
+                MacroNutrientItem("Carbs", foodItem.carbs)
                 VerticalDivider(
                     modifier = Modifier
                         .height(24.dp)
                         .width(1.dp),
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
-                MacroNutrientItem("Fats", foodItem.macroNutrients.fats)
+                MacroNutrientItem("Fats", foodItem.fats)
                 VerticalDivider(
                     modifier = Modifier
                         .height(24.dp)
                         .width(1.dp),
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
-                MacroNutrientItem("Protein", foodItem.macroNutrients.protein)
+                MacroNutrientItem("Protein", foodItem.protein)
             }
         }
     }
@@ -220,9 +220,9 @@ private fun MacroNutrientItem(label: String, value: Double) {
 
 fun previewFoodItemRow(
     foodItem: FoodItem = FoodItem(
-        foodName = "Avocado Toast", calories = 320, macroNutrients = FoodItem.Macros(
+        foodName = "Avocado Toast", calories = 320,
             carbs = 20.0, fats = 25.0, protein = 5.0
-        )
+
     )
 ) {
     Card(modifier = Modifier
@@ -293,21 +293,21 @@ fun previewFoodItemRow(
             Row(
                 modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                MacroNutrientItem("Carbs", foodItem.macroNutrients.carbs)
+                MacroNutrientItem("Carbs", foodItem.carbs)
                 VerticalDivider(
                     modifier = Modifier
                         .height(24.dp)
                         .width(1.dp),
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
-                MacroNutrientItem("Fats", foodItem.macroNutrients.fats)
+                MacroNutrientItem("Fats", foodItem.fats)
                 VerticalDivider(
                     modifier = Modifier
                         .height(24.dp)
                         .width(1.dp),
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
-                MacroNutrientItem("Protein", foodItem.macroNutrients.protein)
+                MacroNutrientItem("Protein", foodItem.protein)
             }
         }
     }

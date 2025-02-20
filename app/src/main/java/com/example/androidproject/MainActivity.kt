@@ -1,8 +1,6 @@
 package com.example.androidproject
-
 import FoodSearchScreen
 import FoodSearchViewModel
-import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,24 +25,27 @@ import androidx.navigation.compose.rememberNavController
 import com.example.androidproject.screens.HomeScreen
 import com.example.androidproject.viewModel.FoodSearchViewModelFactory
 
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-             MainScreen()
+            val application = LocalContext.current.applicationContext as MainApplication // Safe cast
+            val foodItemDao = application.database.foodItemDao()
+//            val allFoodItems: Flow<List<FoodItem>> = foodItemDao.getAllFoodItems()
+            val sharedViewModel: FoodSearchViewModel = viewModel(
+                    factory = FoodSearchViewModelFactory(application)
+            )
+
+            MainScreen(sharedViewModel) // Pass the ViewModel
+            }
         }
     }
-}
+
 
 
 @Composable
-fun MainScreen() {
+fun MainScreen(sharedViewModel:FoodSearchViewModel) {
     val navController = rememberNavController()
-    val context = LocalContext.current.applicationContext as Application
-    val sharedViewModel: FoodSearchViewModel = viewModel(
-        factory = FoodSearchViewModelFactory(context)
-    )
     Scaffold(
         bottomBar = { BottomNavBar(navController) }
     ) { innerPadding ->

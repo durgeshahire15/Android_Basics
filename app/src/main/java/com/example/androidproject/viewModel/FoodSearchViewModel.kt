@@ -2,11 +2,12 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidproject.data.FoodItem
+import com.example.androidproject.data.FoodItemDao
 import com.example.calorietracker.data.CsvHelper
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class FoodSearchViewModel(application: Application) : AndroidViewModel(application) {
+class FoodSearchViewModel(application: Application, private val foodItemDao: FoodItemDao? = null) : AndroidViewModel(application) {
 
     private val _allFoodItems = MutableStateFlow<List<FoodItem>>(emptyList())
     private val _searchQuery = MutableStateFlow("")
@@ -84,7 +85,7 @@ class FoodSearchViewModel(application: Application) : AndroidViewModel(applicati
         return if (query.isEmpty()) {
             flowOf(items)
         } else {
-            flowOf(items.filter { it.foodName.startsWith(query, ignoreCase = true) })
+            flowOf(items.filter { it.foodName.contains(query, ignoreCase = true) })
         }
     }
 
@@ -93,9 +94,9 @@ class FoodSearchViewModel(application: Application) : AndroidViewModel(applicati
         items.forEach { foodItem ->
             // Multiply macros by quantity
             progress.totalCalories += foodItem.calories * foodItem.quantity
-            progress.protein += foodItem.macroNutrients.protein * foodItem.quantity
-            progress.carbs += foodItem.macroNutrients.carbs * foodItem.quantity
-            progress.fats += foodItem.macroNutrients.fats * foodItem.quantity
+            progress.protein += foodItem.protein * foodItem.quantity
+            progress.carbs += foodItem.carbs * foodItem.quantity
+            progress.fats += foodItem.fats * foodItem.quantity
         }
         _macroProgress.value = progress
     }

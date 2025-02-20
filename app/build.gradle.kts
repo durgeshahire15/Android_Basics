@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id( "com.google.devtools.ksp") // Or latest version
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -50,6 +52,10 @@ android {
 }
 
 dependencies {
+    implementation( libs.androidx.room.runtime)
+    implementation (libs.gson)
+    ksp (libs.androidx.room.compiler) // Or latest version
+    implementation (libs.androidx.room.ktx)
     implementation (libs.androidx.navigation.compose)
     implementation (libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.opencsv)
