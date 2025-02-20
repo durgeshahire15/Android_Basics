@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -26,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -90,15 +93,9 @@ fun FoodSearchScreen(viewModel: FoodSearchViewModel) {
 
 @Composable
 fun FoodItemRow(foodItem: FoodItem, viewModel: FoodSearchViewModel) {
-//    val selectedFoodItems by viewModel.uiState.value
-//    val isSelected = selectedFoodItems.contains(foodItem)
-
-
     Card(modifier = Modifier
         .fillMaxWidth()
         .clickable {
-//            viewModel.toggleFoodItemSelection(foodItem)
-//            viewModel.updateItemCount(foodItem, foodItem.quantity + 1)
         }
         .padding(horizontal = 16.dp, vertical = 8.dp)
         .border(
@@ -118,7 +115,9 @@ fun FoodItemRow(foodItem: FoodItem, viewModel: FoodSearchViewModel) {
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(), // Important: Fill the width for SpaceBetween to work
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+
             ) {
                 Text(
                     text = foodItem.foodName,
@@ -126,21 +125,51 @@ fun FoodItemRow(foodItem: FoodItem, viewModel: FoodSearchViewModel) {
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Row{
-                Icon(
-                    painter = painterResource(R.drawable.baseline_add_24),
-                    contentDescription = stringResource(id = R.string.bus_content_description),
-                    modifier = Modifier.clickable { viewModel.updateItemCount(foodItem, foodItem.quantity + 1) }
-                )
-                Text(
-                    text = if (foodItem.quantity == 0) "Quantity" else foodItem.quantity.toString(),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Icon(
-                    painter = painterResource(R.drawable.baseline_minimize_24),
-                    contentDescription = stringResource(id = R.string.minimise_description),
-                    modifier = Modifier.clickable { viewModel.updateItemCount(foodItem, foodItem.quantity - 1) }
-                )
+                    if (foodItem.quantity == 0) {
+                        Text(
+                            text = "Add +",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.inversePrimary,
+                                    shape =CircleShape
+                                )
+                                .padding(horizontal = 9.dp, vertical = 4.dp)
+                                .clickable { viewModel.updateItemCount(foodItem, foodItem.quantity + 1) }
+                        )
+                    } else {
+                        Text(
+                            text = "-",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.inversePrimary,
+                                    shape = CircleShape
+                                )
+                                .padding(horizontal = 10.dp).clickable { viewModel.updateItemCount(foodItem, foodItem.quantity -1 ) }
+                        )
+                        Text(
+                            text = foodItem.quantity.toString(),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(horizontal = 6.dp) // Add some padding for visual separation
+                        )
+                        Text(
+                            text = "+",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.inversePrimary,  // Conditional border color,
+                                    shape = CircleShape
+                                )
+                                .padding(horizontal = 8.dp).clickable { viewModel.updateItemCount(foodItem, foodItem.quantity + 1) }
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -215,10 +244,9 @@ private fun MacroNutrientItem(label: String, value: Double) {
 //    )
 //}
 
-@Preview()
+//@Preview()
 @Composable
-
-fun previewFoodItemRow(
+fun PreviewFoodItemRow(
     foodItem: FoodItem = FoodItem(
         foodName = "Avocado Toast", calories = 320,
             carbs = 20.0, fats = 25.0, protein = 5.0
@@ -248,7 +276,6 @@ fun previewFoodItemRow(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(), // Important: Fill the width for SpaceBetween to work
-
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
@@ -257,7 +284,7 @@ fun previewFoodItemRow(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "ADD+",
+                    text = "ADD +",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
@@ -310,5 +337,37 @@ fun previewFoodItemRow(
                 MacroNutrientItem("Protein", foodItem.protein)
             }
         }
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewAddButton(){
+    Row{
+    Text(
+        text = "ADD +",
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.inversePrimary,  // Conditional border color,
+                shape = CircleShape
+            )
+            .padding(10.dp)
+    )
+    Text(
+        text = "-",
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.inversePrimary,
+                shape = CircleShape
+            )
+            .padding(horizontal = 8.dp).clickable { }
+    )
     }
 }

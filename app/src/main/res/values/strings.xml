@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AndroidProject</string>
+    <string name="app_name">NutriPro</string>
     <string name="bus_content_description">add button</string>
     <string name="minimise_description">Minimize description</string>
 </resources>

@@ -34,25 +34,19 @@ class FoodSearchViewModel(
     }
 
     init {
-        // Initial data load
         viewModelScope.launch {
-            // Check if database is empty
             if (foodItemDao.getAllFoodItems().first().isEmpty()) {
-                // Load initial data from CSV and insert into database
                 val foodItems = CsvHelper.readCsv(application.applicationContext)
                 foodItems.forEach { foodItem ->
                     foodItemDao.insert(foodItem)
                 }
             }
-
-            // Set up continuous observation of database changes
             setupDatabaseObservation()
         }
     }
 
     private fun setupDatabaseObservation() {
         viewModelScope.launch {
-            // Combine search query with database updates
             combine(
                 _searchQuery,
                 foodItemDao.getAllFoodItems()
@@ -71,8 +65,6 @@ class FoodSearchViewModel(
                     }
                 }
         }
-
-        // Observe database for quantity changes and update macros
         viewModelScope.launch {
             foodItemDao.getAllFoodItems()
                 .map { items -> items.filter { it.quantity > 0 } }

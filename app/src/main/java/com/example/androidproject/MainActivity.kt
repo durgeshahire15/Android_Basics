@@ -1,9 +1,12 @@
 package com.example.androidproject
 import FoodSearchScreen
 import FoodSearchViewModel
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -26,24 +29,47 @@ import com.example.androidproject.screens.HomeScreen
 import com.example.androidproject.viewModel.FoodSearchViewModelFactory
 
 class MainActivity : ComponentActivity() {
+    private lateinit var navController: NavHostController
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContent {
             val application = LocalContext.current.applicationContext as MainApplication // Safe cast
             val foodItemDao = application.database.foodItemDao()
             val sharedViewModel: FoodSearchViewModel = viewModel(
                     factory = FoodSearchViewModelFactory(application, foodItemDao)
             )
-            MainScreen(sharedViewModel) // Pass the ViewModel
+            navController = rememberNavController()
+            MainScreen(sharedViewModel,navController) // Pass the ViewModel
             }
         }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        when (navController.currentDestination?.route) {
+            "home" -> {
+                moveTaskToBack(true)
+            }
+            "search" -> {
+                navController.navigate("home") {
+                    // Pop up to home destination to avoid building up a large stack
+                    popUpTo("home") { inclusive = false }
+                }
+            }
+            else -> {
+                super.onBackPressed()
+            }
+        }
+    }
     }
 
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MainScreen(sharedViewModel:FoodSearchViewModel) {
-    val navController = rememberNavController()
+fun MainScreen(sharedViewModel:FoodSearchViewModel, navController: NavHostController) {
+//    val navController = rememberNavController()
     Scaffold(
         bottomBar = { BottomNavBar(navController) }
     ) { innerPadding ->
@@ -75,6 +101,7 @@ fun BottomNavBar(navController: NavHostController) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavigationGraph(navController: NavHostController, modifier: Modifier, sharedViewModel: FoodSearchViewModel ) {
     NavHost(navController, startDestination = "home", modifier = modifier) {
