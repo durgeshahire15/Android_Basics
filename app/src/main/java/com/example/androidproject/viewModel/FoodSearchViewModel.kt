@@ -7,9 +7,11 @@ import com.example.calorietracker.data.CsvHelper
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class FoodSearchViewModel(application: Application, private val foodItemDao: FoodItemDao? = null) : AndroidViewModel(application) {
+class FoodSearchViewModel(
+    application: Application,
+    private val foodItemDao: FoodItemDao
+) : AndroidViewModel(application) {
 
-    private val _allFoodItems = MutableStateFlow<List<FoodItem>>(emptyList())
     private val _searchQuery = MutableStateFlow("")
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
     private val _macroProgress = MutableStateFlow(MacroProgress())
@@ -25,8 +27,6 @@ class FoodSearchViewModel(application: Application, private val foodItemDao: Foo
         var fats: Double = 0.0
     )
 
-    // Update FoodItem to include quantity
-
     sealed class UiState {
         object Loading : UiState()
         data class Success(val foodItems: List<FoodItem>) : UiState()
@@ -34,16 +34,29 @@ class FoodSearchViewModel(application: Application, private val foodItemDao: Foo
     }
 
     init {
+        // Initial data load
         viewModelScope.launch {
-            val foodItems = CsvHelper.readCsv(application.applicationContext)
-            _allFoodItems.value = foodItems
+            // Check if database is empty
+            if (foodItemDao.getAllFoodItems().first().isEmpty()) {
+                // Load initial data from CSV and insert into database
+                val foodItems = CsvHelper.readCsv(application.applicationContext)
+                foodItems.forEach { foodItem ->
+                    foodItemDao.insert(foodItem)
+                }
+            }
 
-            _uiState.value = if (foodItems.isEmpty()) UiState.Empty else UiState.Success(foodItems)
+            // Set up continuous observation of database changes
+            setupDatabaseObservation()
         }
+    }
 
-        // Search query handling
+    private fun setupDatabaseObservation() {
         viewModelScope.launch {
-            combine(_searchQuery, _allFoodItems) { query, items ->
+            // Combine search query with database updates
+            combine(
+                _searchQuery,
+                foodItemDao.getAllFoodItems()
+            ) { query, items ->
                 Pair(query, items)
             }
                 .debounce(300)
@@ -59,9 +72,9 @@ class FoodSearchViewModel(application: Application, private val foodItemDao: Foo
                 }
         }
 
-        // Observe allFoodItems for quantity changes and update macros
+        // Observe database for quantity changes and update macros
         viewModelScope.launch {
-            _allFoodItems
+            foodItemDao.getAllFoodItems()
                 .map { items -> items.filter { it.quantity > 0 } }
                 .collect { itemsWithQuantity ->
                     updateMacroProgress(itemsWithQuantity)
@@ -70,14 +83,11 @@ class FoodSearchViewModel(application: Application, private val foodItemDao: Foo
     }
 
     fun updateItemCount(foodItem: FoodItem, newQuantity: Int) {
-        val currentItems = _allFoodItems.value.toMutableList()
-        val itemIndex = currentItems.indexOfFirst { it.foodName == foodItem.foodName }
-
-        if (itemIndex != -1 && newQuantity>=0) {
-            // Create new item with updated quantity
-            val updatedItem = foodItem.copy(quantity = newQuantity)
-            currentItems[itemIndex] = updatedItem
-            _allFoodItems.value = currentItems
+        viewModelScope.launch {
+            if (newQuantity >= 0) {
+                val updatedItem = foodItem.copy(quantity = newQuantity)
+                foodItemDao.update(updatedItem)
+            }
         }
     }
 
@@ -92,7 +102,6 @@ class FoodSearchViewModel(application: Application, private val foodItemDao: Foo
     private fun updateMacroProgress(items: List<FoodItem>) {
         val progress = MacroProgress()
         items.forEach { foodItem ->
-            // Multiply macros by quantity
             progress.totalCalories += foodItem.calories * foodItem.quantity
             progress.protein += foodItem.protein * foodItem.quantity
             progress.carbs += foodItem.carbs * foodItem.quantity

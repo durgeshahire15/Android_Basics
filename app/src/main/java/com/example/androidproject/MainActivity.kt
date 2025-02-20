@@ -31,11 +31,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             val application = LocalContext.current.applicationContext as MainApplication // Safe cast
             val foodItemDao = application.database.foodItemDao()
-//            val allFoodItems: Flow<List<FoodItem>> = foodItemDao.getAllFoodItems()
             val sharedViewModel: FoodSearchViewModel = viewModel(
-                    factory = FoodSearchViewModelFactory(application)
+                    factory = FoodSearchViewModelFactory(application, foodItemDao)
             )
-
             MainScreen(sharedViewModel) // Pass the ViewModel
             }
         }
